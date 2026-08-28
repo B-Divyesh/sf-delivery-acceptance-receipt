@@ -34,6 +34,12 @@ describe('portable evidence primitives', () => {
     expect(verifyReceipt({ ...receipt, deliverables: [{ ...receipt.deliverables[0], name: 'Changed' }] })).toBe(false);
   });
 
+  it('rejects whitespace-only receipt identity fields', () => {
+    for (const field of ['project', 'freelancer', 'client'] as const) {
+      expect(verifyReceipt({ ...receipt, [field]: ' \t\n ' })).toBe(false);
+    }
+  });
+
   it('checks client response integrity', () => {
     const body: Omit<ClientResponse, 'responseHash'> = {
       version: 1,
@@ -46,6 +52,8 @@ describe('portable evidence primitives', () => {
     const response = { ...body, responseHash: makeResponseHash(body) };
     expect(verifyResponse(response)).toBe(true);
     expect(verifyResponse({ ...response, decision: 'declined' })).toBe(false);
+    const blankNameBody = { ...body, clientName: '   ' };
+    expect(verifyResponse({ ...blankNameBody, responseHash: makeResponseHash(blankNameBody) })).toBe(false);
   });
 
   it('builds a real PDF document containing receipt evidence', () => {

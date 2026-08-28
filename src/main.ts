@@ -37,6 +37,11 @@ const formatBytes = (bytes = 0): string => {
 
 const shortHash = (hash: string): string => `${hash.slice(0, 12)}…${hash.slice(-12)}`;
 const randomId = (): string => `DR-${today.replaceAll('-', '')}-${Array.from(crypto.getRandomValues(new Uint8Array(4)), (byte) => byte.toString(16).padStart(2, '0')).join('').toUpperCase()}`;
+const requiredReceiptText = [
+  { name: 'project', label: 'Project or engagement' },
+  { name: 'freelancer', label: 'Your name or studio' },
+  { name: 'client', label: 'Client name' }
+] as const;
 const publicPart = (record: ReceiptRecord): PublicReceipt => {
   const { status: _status, response: _response, ...receipt } = record;
   return receipt;
@@ -226,7 +231,14 @@ async function copyText(text: string, success: string): Promise<void> {
 }
 
 function bindHome(): void {
-  document.querySelector<HTMLFormElement>('[data-receipt-form]')?.addEventListener('input', captureDraft);
+  document.querySelector<HTMLFormElement>('[data-receipt-form]')?.addEventListener('input', (event) => {
+    captureDraft();
+    const input = event.target;
+    if (input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement) {
+      input.setCustomValidity('');
+      input.removeAttribute('aria-invalid');
+    }
+  });
   document.querySelector<HTMLInputElement>('#file-input')?.addEventListener('change', async (event) => {
     captureDraft();
     const input = event.currentTarget as HTMLInputElement;
@@ -308,6 +320,14 @@ async function createReceipt(event: SubmitEvent): Promise<void> {
   event.preventDefault();
   captureDraft();
   const form = event.currentTarget as HTMLFormElement;
+  for (const field of requiredReceiptText) {
+    const input = form.elements.namedItem(field.name);
+    if (!(input instanceof HTMLInputElement) || state.draft[field.name].trim()) continue;
+    input.setCustomValidity(`${field.label} cannot contain only spaces.`);
+    input.setAttribute('aria-invalid', 'true');
+    input.focus();
+    return setNotice(`${field.label} cannot be blank. Enter a value before sealing.`, true);
+  }
   const firstInvalid = form.querySelector<HTMLInputElement | HTMLTextAreaElement>(':invalid');
   if (firstInvalid) {
     firstInvalid.focus();
@@ -324,6 +344,9 @@ async function createReceipt(event: SubmitEvent): Promise<void> {
     deliveryDate: state.draft.deliveryDate, ...(state.draft.dueDate ? { dueDate: state.draft.dueDate } : {}),
     ...(state.draft.note.trim() ? { note: state.draft.note.trim() } : {}), deliverables, manifestHash: manifestHash(deliverables), createdAt, status: 'draft'
   };
+  if (!verifyReceipt(publicPart(record))) {
+    return setNotice('This delivery could not be verified, so it was not sealed. Review the details and try again.', true);
+  }
   await saveReceipt(record);
   state.current = record;
   state.records = await getReceipts();
@@ -433,14 +456,33 @@ function acknowledgementResult(receipt: PublicReceipt, response: ClientResponse)
 }
 
 function bindAcknowledgement(receipt: PublicReceipt): void {
-  document.querySelector<HTMLFormElement>('[data-ack-form]')?.addEventListener('submit', async (event) => {
+  const acknowledgement = document.querySelector<HTMLFormElement>('[data-ack-form]');
+  acknowledgement?.addEventListener('input', (event) => {
+    const input = event.target;
+    if (input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement) {
+      input.setCustomValidity('');
+      input.removeAttribute('aria-invalid');
+    }
+  });
+  acknowledgement?.addEventListener('submit', async (event) => {
     event.preventDefault();
     const form = event.currentTarget as HTMLFormElement;
     if (!form.reportValidity()) return;
     const data = new FormData(form);
+    const clientName = String(data.get('clientName') ?? '').trim();
+    if (!clientName) {
+      const input = form.elements.namedItem('clientName');
+      if (input instanceof HTMLInputElement) {
+        input.setCustomValidity('Your name cannot contain only spaces.');
+        input.setAttribute('aria-invalid', 'true');
+        input.focus();
+        input.reportValidity();
+      }
+      return setNotice('Your name cannot be blank. Enter a name before recording the response.', true);
+    }
     const body: Omit<ClientResponse, 'responseHash'> = {
       version: 1, receiptId: receipt.id, manifestHash: receipt.manifestHash,
-      decision: String(data.get('decision')) as ClientResponse['decision'], clientName: String(data.get('clientName')).trim(),
+      decision: String(data.get('decision')) as ClientResponse['decision'], clientName,
       ...(String(data.get('note') ?? '').trim() ? { note: String(data.get('note')).trim() } : {}), respondedAt: new Date().toISOString()
     };
     const response = { ...body, responseHash: makeResponseHash(body) };

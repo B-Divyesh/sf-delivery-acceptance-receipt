@@ -108,15 +108,17 @@ export function makeResponseHash(response: Omit<ClientResponse, 'responseHash'>)
   return hashText(JSON.stringify(response));
 }
 
+const hasText = (value: unknown): value is string => typeof value === 'string' && value.trim().length > 0;
+
 export function verifyReceipt(receipt: PublicReceipt): boolean {
-  return receipt.version === 1 && Boolean(receipt.id && receipt.project && receipt.freelancer && receipt.client) &&
+  return receipt.version === 1 && [receipt.id, receipt.project, receipt.freelancer, receipt.client].every(hasText) &&
     Array.isArray(receipt.deliverables) && receipt.deliverables.length > 0 && manifestHash(receipt.deliverables) === receipt.manifestHash;
 }
 
 export function verifyResponse(response: ClientResponse): boolean {
   const { responseHash, ...body } = response;
   return response.version === 1 && ['accepted', 'declined'].includes(response.decision) &&
-    Boolean(response.receiptId && response.clientName && response.respondedAt) && makeResponseHash(body) === responseHash;
+    [response.receiptId, response.clientName, response.respondedAt].every(hasText) && makeResponseHash(body) === responseHash;
 }
 
 export function encodePortable(value: unknown): string {

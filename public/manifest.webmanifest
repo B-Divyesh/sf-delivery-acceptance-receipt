@@ -2,7 +2,7 @@
   "name": "Delivery Receipt",
   "short_name": "Receipt",
   "description": "A local-first record of freelance deliveries and client responses.",
-  "start_url": "/?v=1.0.0",
+  "start_url": "/?v=1.0.3",
   "scope": "/",
   "display": "standalone",
   "background_color": "#f2e7cf",

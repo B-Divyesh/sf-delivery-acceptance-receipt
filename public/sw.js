@@ -1,4 +1,4 @@
-const VERSION = 'delivery-receipt-v1.0.2';
+const VERSION = 'delivery-receipt-v1.0.3';
 const SHELL = [
   '/', '/index.html', '/privacy/', '/terms/', '/offline.html',
   '/assets/main.js', '/assets/app.css', '/manifest.webmanifest',
