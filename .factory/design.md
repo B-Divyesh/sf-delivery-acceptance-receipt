@@ -60,7 +60,7 @@ The hero illustration is a generated editorial still life: a clear cassette whos
 - Composition: landscape, primary object right-of-center, usable paper-negative-space on the left, no interface mockup.
 - Negative list: no people, hands, brands, logos, watermarks, readable text, fake app UI, gradients, neon cyberpunk, glossy 3D render.
 
-Generated with the factory image deployment (`/opt/fleet/lib/gen-image.sh`, Azure OpenAI image model) on 2026-08-28. Original generated work commissioned for this product. Final source prompt is stored beside the source image in `assets/src/hero-cassette.json`; WebP derivatives are optimized locally and reviewed for unwanted text, symbols, brands, and visual seams.
+Generated with the factory image deployment (`/opt/fleet/lib/gen-image.sh`, Azure OpenAI image model) on 2026-08-28. Original generated work commissioned for this product. Final source prompt is stored beside the source image in `assets/src/hero-cassette.json`; AVIF/WebP derivatives and a JPEG fallback are optimized locally and reviewed for unwanted text, symbols, brands, and visual seams.
 
 ## Print/PDF
 

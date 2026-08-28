@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Delivery Receipt cassette mark">
+  <rect width="512" height="512" rx="72" fill="#f2e7cf"/>
+  <path d="M74 122h364v268H74z" fill="#fff8e9" stroke="#171512" stroke-width="24"/>
+  <path d="M112 166h288v122H112z" fill="#d9e44c" stroke="#171512" stroke-width="16"/>
+  <circle cx="170" cy="228" r="34" fill="#f2e7cf" stroke="#171512" stroke-width="14"/>
+  <circle cx="342" cy="228" r="34" fill="#f2e7cf" stroke="#171512" stroke-width="14"/>
+  <path d="M152 340h208l26 50H126z" fill="#2448a8" stroke="#171512" stroke-width="16"/>
+  <path d="m302 116 34 34 70-76" fill="none" stroke="#2448a8" stroke-width="24" stroke-linecap="square"/>
+</svg>
