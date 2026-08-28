@@ -1,0 +1,11 @@
+{
+  "slug": "delivery-acceptance-receipt",
+  "title": "Delivery Receipt",
+  "territory": "utilities",
+  "user": "Freelancers delivering files or completed services who need a neutral record of what was delivered, when, and whether the client accepted it before a payment dispute.",
+  "smallest_useful_product": "Local web app that hashes a selected file manifest or service checklist, creates a client acknowledgement page, records acknowledgement/decline and exports a receipt PDF.",
+  "artifact_class": "pwa-offline",
+  "monetization": "one-time",
+  "constraints": "Never hold files, money, or credentials; disclose that the receipt is evidence only and legal effect depends on jurisdiction and contract.",
+  "state": "RESEARCHED"
+}
