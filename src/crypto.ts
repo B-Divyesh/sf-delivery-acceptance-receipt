@@ -108,17 +108,45 @@ export function makeResponseHash(response: Omit<ClientResponse, 'responseHash'>)
   return hashText(JSON.stringify(response));
 }
 
+const isObject = (value: unknown): value is Record<string, unknown> => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 const hasText = (value: unknown): value is string => typeof value === 'string' && value.trim().length > 0;
+const isHash = (value: unknown): value is string => typeof value === 'string' && /^[a-f0-9]{64}$/i.test(value);
+const isDate = (value: unknown): value is string => {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(`${value}T00:00:00.000Z`);
+  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
+};
+const isTime = (value: unknown): value is string => hasText(value) && Number.isFinite(Date.parse(value));
+const hasOnlyKeys = (value: Record<string, unknown>, allowed: readonly string[]) => Object.keys(value).every((key) => allowed.includes(key));
 
-export function verifyReceipt(receipt: PublicReceipt): boolean {
-  return receipt.version === 1 && [receipt.id, receipt.project, receipt.freelancer, receipt.client].every(hasText) &&
-    Array.isArray(receipt.deliverables) && receipt.deliverables.length > 0 && manifestHash(receipt.deliverables) === receipt.manifestHash;
+function verifyDeliverable(value: unknown): value is Deliverable {
+  if (!isObject(value) || !hasText(value.id) || !hasText(value.name) || !['file', 'service'].includes(String(value.kind))) return false;
+  if (value.kind === 'service') return hasOnlyKeys(value, ['id', 'kind', 'name']);
+  if (!hasOnlyKeys(value, ['id', 'kind', 'name', 'size', 'lastModified', 'sha256'])) return false;
+  return Number.isSafeInteger(value.size) && Number(value.size) >= 0 &&
+    (value.lastModified === undefined || (Number.isSafeInteger(value.lastModified) && Number(value.lastModified) >= 0)) && isHash(value.sha256);
 }
 
-export function verifyResponse(response: ClientResponse): boolean {
+export function verifyReceipt(value: unknown): value is PublicReceipt {
+  if (!isObject(value)) return false;
+  if (!hasOnlyKeys(value, ['version', 'id', 'project', 'freelancer', 'client', 'deliveryDate', 'dueDate', 'note', 'deliverables', 'manifestHash', 'createdAt'])) return false;
+  const deliverables = value.deliverables;
+  return value.version === 1 && [value.id, value.project, value.freelancer, value.client].every(hasText) &&
+    isDate(value.deliveryDate) && (value.dueDate === undefined || isDate(value.dueDate)) &&
+    (value.note === undefined || typeof value.note === 'string') && isTime(value.createdAt) &&
+    Array.isArray(deliverables) && deliverables.length > 0 && deliverables.every(verifyDeliverable) &&
+    isHash(value.manifestHash) && manifestHash(deliverables) === value.manifestHash;
+}
+
+export function verifyResponse(value: unknown): value is ClientResponse {
+  if (!isObject(value)) return false;
+  if (!hasOnlyKeys(value, ['version', 'receiptId', 'manifestHash', 'decision', 'clientName', 'note', 'respondedAt', 'responseHash'])) return false;
+  const response = value as unknown as ClientResponse;
   const { responseHash, ...body } = response;
-  return response.version === 1 && ['accepted', 'declined'].includes(response.decision) &&
-    [response.receiptId, response.clientName, response.respondedAt].every(hasText) && makeResponseHash(body) === responseHash;
+  return response.version === 1 && ['accepted', 'declined'].includes(String(response.decision)) &&
+    [response.receiptId, response.clientName, response.respondedAt].every(hasText) && isHash(response.manifestHash) &&
+    isTime(response.respondedAt) && (response.note === undefined || typeof response.note === 'string') &&
+    isHash(responseHash) && makeResponseHash(body) === responseHash;
 }
 
 export function encodePortable(value: unknown): string {

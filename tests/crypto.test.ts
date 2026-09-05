@@ -40,6 +40,12 @@ describe('portable evidence primitives', () => {
     }
   });
 
+  it('rejects impossible receipt dates and unexpected archive fields', () => {
+    expect(verifyReceipt({ ...receipt, deliveryDate: '2026-02-29' })).toBe(false);
+    expect(verifyReceipt({ ...receipt, status: 'accepted' })).toBe(false);
+    expect(verifyReceipt({ ...receipt, deliverables: [{ ...receipt.deliverables[0], sha256: 'not-a-file-hash' }] })).toBe(false);
+  });
+
   it('checks client response integrity', () => {
     const body: Omit<ClientResponse, 'responseHash'> = {
       version: 1,
@@ -54,6 +60,8 @@ describe('portable evidence primitives', () => {
     expect(verifyResponse({ ...response, decision: 'declined' })).toBe(false);
     const blankNameBody = { ...body, clientName: '   ' };
     expect(verifyResponse({ ...blankNameBody, responseHash: makeResponseHash(blankNameBody) })).toBe(false);
+    const responseWithUnexpectedField = { ...response, unexpected: 'not part of a response' };
+    expect(verifyResponse({ ...responseWithUnexpectedField, responseHash: makeResponseHash(responseWithUnexpectedField) })).toBe(false);
   });
 
   it('builds a real PDF document containing receipt evidence', () => {

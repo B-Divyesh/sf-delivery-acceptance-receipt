@@ -1,0 +1,65 @@
+[
+  {
+    "id": "demo-sandbox",
+    "claim": "Try it with sample data opens a completed sample and never changes real records.",
+    "where": "landing action and demo banner",
+    "test": "npm run test:e2e -- --grep @claim:demo-sandbox",
+    "sandbox": "fresh browser context; create a real receipt, open /demo, reset the sample, then start for real"
+  },
+  {
+    "id": "local-file-hash",
+    "claim": "Selected file bytes are fingerprinted with SHA-256 without outgoing delivery-data requests.",
+    "where": "create receipt and privacy copy",
+    "test": "npm run test:e2e -- --grep @claim:local-file-hash",
+    "sandbox": "fresh /demo browser; fingerprint a fixture file; compare exported hash and record every request"
+  },
+  {
+    "id": "acknowledgement-page",
+    "claim": "A receipt creates a separate client acknowledgement page with a fixed delivery list.",
+    "where": "receipt panel and how it works",
+    "test": "npm run test:e2e -- --grep @claim:acknowledgement-page",
+    "sandbox": "fresh /demo browser; open the sample acknowledgement link and inspect the rendered list"
+  },
+  {
+    "id": "response-bound",
+    "claim": "A client acceptance or decline is checked against the exact receipt and manifest.",
+    "where": "how it works and response verification",
+    "test": "npm run test:e2e -- --grep @claim:response-bound",
+    "sandbox": "fresh /demo sender and client contexts; record an acceptance and verify its response code"
+  },
+  {
+    "id": "pdf-export",
+    "claim": "Delivery Receipt exports a receipt PDF.",
+    "where": "receipt action and terms",
+    "test": "npm run test:e2e -- --grep @claim:pdf-export",
+    "sandbox": "fresh /demo browser; download a sample receipt and inspect the PDF signature and manifest text"
+  },
+  {
+    "id": "archive-transfer",
+    "claim": "Receipt and response records export as JSON and can be imported again.",
+    "where": "saved receipts and privacy copy",
+    "test": "npm run test:e2e -- --grep @claim:archive-transfer",
+    "sandbox": "fresh /demo browser; export the sample archive, delete it, import the downloaded archive, and inspect the restored record"
+  },
+  {
+    "id": "browser-persistence",
+    "claim": "Saved receipts stay in the browser until they are deleted.",
+    "where": "saved receipts empty state and privacy policy",
+    "test": "npm run test:e2e -- --grep @claim:browser-persistence",
+    "sandbox": "fresh /demo browser; reload after sample data is seeded, then delete the sample and inspect the empty record list"
+  },
+  {
+    "id": "offline-reload",
+    "claim": "Receipt creation works offline after the first visit.",
+    "where": "landing facts and offline status",
+    "test": "npm run test:e2e -- --grep @claim:offline-reload",
+    "sandbox": "dedicated fresh browser context; load /demo, wait for the service worker, go offline, reload, and seal a receipt"
+  },
+  {
+    "id": "local-only",
+    "claim": "The core app needs no account and sends the demo flow only to this site.",
+    "where": "landing facts and privacy policy",
+    "test": "npm run test:e2e -- --grep @claim:local-only",
+    "sandbox": "fresh /demo browser; inspect the account-free UI and record every request during load"
+  }
+]

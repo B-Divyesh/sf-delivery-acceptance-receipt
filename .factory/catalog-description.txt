@@ -1,0 +1,1 @@
+Record a delivered file or service, get a client response, and export a receipt.

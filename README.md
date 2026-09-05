@@ -1,52 +1,42 @@
 # Delivery Receipt
 
-Delivery Receipt is a local-first PWA for freelancers who want a neutral record of a handoff before a payment dispute. It fingerprints selected files with SHA-256 (without uploading or retaining their contents), records completed services, creates a portable client acknowledgement page, captures acceptance or decline, and exports actual PDF and JSON evidence.
+Delivery Receipt helps freelancers record delivered files or services, ask a client to accept or decline the listed delivery, and export the result. It is a local-first PWA. It does not hold files, money, or credentials.
 
-Live: <https://delivery-acceptance-receipt.sociobot.in>
+Try the isolated sample: <https://delivery-acceptance-receipt.sociobot.in/demo>
 
-## How it works
+## Use it
 
-1. Enter the engagement and add file fingerprints or completed services.
-2. Seal the manifest and send its acknowledgement link alongside the actual work through your normal delivery channel.
-3. The client reviews the locked manifest and returns a portable response code.
-4. Import the code into the local receipt to verify that its receipt ID, manifest hash, decision, response time, and response hash match.
+1. Add the project details and fingerprint files or list completed services.
+2. Seal the receipt and send its acknowledgement link with the actual delivery.
+3. The client checks the fixed list, accepts or declines it, and sends back a response code.
+4. Verify the response code and download PDF or JSON records.
 
-Receipts and client responses live in IndexedDB. Use “Export all JSON” for backup or transfer. The client link includes receipt metadata and hashes, but never file contents. The PWA works offline after its first successful load.
+The core app needs no account. File bytes are hashed in the browser and are not uploaded. Receipt records remain in browser storage until deleted. After the first visit, receipt creation works offline. Shared acknowledgement links contain receipt metadata and hashes, not file bytes.
 
-This product records evidence; it does not provide escrow, collections, identity verification, legal advice, or a guarantee of legal effect.
+Use **Try it with sample data** or `/demo` to open a completed Northstar Coffee handoff. Demo records use a separate `demo:delivery-receipt` IndexedDB database. Resetting the sample never changes real records.
 
-## Free and Studio
+This product records evidence only. It is not escrow, payment collection, legal advice, identity verification, or a guarantee of legal effect. Legal effect depends on the agreement and jurisdiction.
 
-The free deck includes unlimited receipts, streaming file hashing, client responses, standard PDF/JSON export, backup/import, and offline use. Studio is a one-time ₹499 license that removes the small Delivery Receipt PDF footer and enables a custom studio footer. Checkout and license verification use only the Sociobot billing API; no payment provider is embedded in the app.
+## Develop and verify
 
-## Develop
-
-Requirements: Node.js 22+ and npm.
+Requirements: Node.js 22+ and npm. Playwright Chromium 1.58.2 is pinned. If needed, run `npx playwright install chromium`.
 
 ```sh
 npm ci
-npm run dev
+npm test
+npm run build
+npm run test:claims
 ```
 
-Useful commands:
-
-```sh
-npm test       # unit + desktop/mobile Playwright + axe + offline checks
-npm run build  # reproducible static build in ./dist
-npm run preview
-```
-
-Playwright is pinned to 1.58.2. If its Chromium browser is not already available, run `npx playwright install chromium`.
+`npm test` runs unit tests plus desktop and phone browser coverage. `npm run test:claims` runs every command in [`.factory/claims.json`](.factory/claims.json) from the sample entry point.
 
 ## Deploy
 
-Run `npm ci && npm run build`, then publish the contents of `dist/` at the domain root. `dist/index.html` is the static entry point; `/privacy/` and `/terms/` are independent static entries. The service worker expects a root deployment and versioned cache names.
+Build with `npm run build` and publish `dist/` at the domain root. The build includes the service worker, manifest, immutable hashed application assets, `staticwebapp.config.json`, and the designed `404.html` response. The static deployment must preserve the headers, content type, route rewrites, 404 override, and one-site origin described by that configuration.
 
 ## Privacy and design
 
-There are no analytics, ads, third-party runtime scripts, or remote fonts. The only optional background request verifies a locally stored Studio license with `api.sociobot.in` at most once per day. See [privacy](https://delivery-acceptance-receipt.sociobot.in/privacy/) and [terms](https://delivery-acceptance-receipt.sociobot.in/terms/).
-
-The product-specific cassette-zine system and generated-art provenance are documented in [`.factory/design.md`](.factory/design.md). The researched scope is in [`.factory/brief.json`](.factory/brief.json).
+See [privacy](https://delivery-acceptance-receipt.sociobot.in/privacy/) and [terms](https://delivery-acceptance-receipt.sociobot.in/terms/). The product-specific cassette-print visual system and image provenance are in [`.factory/design.md`](.factory/design.md). Demo details are in [`.factory/demo.md`](.factory/demo.md).
 
 ## License
 

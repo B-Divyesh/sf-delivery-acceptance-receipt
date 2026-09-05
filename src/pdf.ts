@@ -45,7 +45,7 @@ function pdfDocument(lines: string[]): Uint8Array {
   return new TextEncoder().encode(output);
 }
 
-export function receiptPdf(receipt: PublicReceipt, response?: ClientResponse, customFooter?: string, brandFree = false): Uint8Array {
+export function receiptPdf(receipt: PublicReceipt, response?: ClientResponse): Uint8Array {
   const status = response?.decision.toUpperCase() ?? 'DELIVERED / AWAITING RESPONSE';
   const lines = [
     'DELIVERY RECEIPT',
@@ -75,8 +75,7 @@ export function receiptPdf(receipt: PublicReceipt, response?: ClientResponse, cu
     if (response.note) lines.push(...wrap(`NOTE          ${response.note}`));
   }
   lines.push('', 'EVIDENCE NOTICE', ...wrap('This receipt records a delivery manifest and a stated response. It is evidence only, not legal advice, escrow, payment collection, or a guarantee of legal effect. Effect depends on your contract and jurisdiction.'));
-  if (customFooter) lines.push('', ...wrap(customFooter));
-  if (!brandFree) lines.push('', 'Made with Delivery Receipt | delivery-acceptance-receipt.sociobot.in');
+  lines.push('', 'Made with Delivery Receipt | delivery-acceptance-receipt.sociobot.in');
   return pdfDocument(lines);
 }
 

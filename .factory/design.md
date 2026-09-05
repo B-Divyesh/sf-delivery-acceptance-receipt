@@ -62,6 +62,8 @@ The hero illustration is a generated editorial still life: a clear cassette whos
 
 Generated with the factory image deployment (`/opt/fleet/lib/gen-image.sh`, Azure OpenAI image model) on 2026-08-28. Original generated work commissioned for this product. Final source prompt is stored beside the source image in `assets/src/hero-cassette.json`; AVIF/WebP derivatives and a JPEG fallback are optimized locally and reviewed for unwanted text, symbols, brands, and visual seams.
 
+The 1200×630 social preview is a local crop and compression of the same reviewed source artwork. It contains no added text, people, brands, or third-party material.
+
 ## Print/PDF
 
 Exported receipts translate the same language into monochrome-safe paper: title, state word, manifest, digest, timestamps, and evidence disclaimer. Decorative texture drops out, and no meaning depends on color.
