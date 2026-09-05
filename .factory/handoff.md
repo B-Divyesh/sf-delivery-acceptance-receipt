@@ -1,67 +1,53 @@
-# Delivery Receipt — repair handoff
+# Delivery Receipt — verification 3 handoff
 
 ## Result
 
-The repair is complete for the local-first delivery-to-client-response job.
+Independent verification result: **FAIL**.
 
-- Implementation SHA: `cbd2bc673d7549f8a019d6f66cd15e5ff3827fde`
-- Documentation report SHA: `f59e339664d84b97a650ec201187747d0e94844d`
+- Findings: 3 medium
+- Untested claims: 2
+- Implementation reviewed: `cbd2bc673d7549f8a019d6f66cd15e5ff3827fde`
+- Documentation baseline: `7e09a53291d85698736dfca54f541f7cf6bae77c`
 - Live URL: <https://delivery-acceptance-receipt.sociobot.in/>
-- Deployment: Static Web Apps production deployment succeeded on 2026-09-05 UTC.
+- Full report: `.factory/verification-3.md`
 
-The product lets freelancers record delivered files or services, send a fixed acknowledgement page, verify a client acceptance or decline, and export the receipt. It does not hold files, money, or credentials.
+No product code was changed.
 
-## What changed
+## What was verified
 
-- Added isolated `/demo` with a realistic Northstar Coffee receipt, accepted response, persistent sample banner, Reset demo, and Start for real. Demo data uses `demo:delivery-receipt`; real records use `delivery-receipt`.
-- Validated every imported archive row before writing and imported the checked bundle in one IndexedDB transaction. Accepted or declined records require their matching response. Invalid data is rejected without changing current records.
-- Added nine demo-backed public claims in `.factory/claims.json`, a claim runner, and outcome-based browser checks.
-- Removed the unavailable Studio offer, checkout link, and license code. The free core product remains usable without an account.
-- Rewrote first-screen and empty-state copy in plain language; added the copy audit and catalog description.
-- Added real acknowledgement routes, route-specific titles, focus movement, announcements, standard header/footer, metadata, social preview, Apple icon, designed 404, Static Web Apps policies, immutable hashed assets, and manifest MIME configuration.
-- Generated the service worker from the production asset list and retained update notification, offline shell, reduced motion, visible focus, and 44 px phone targets.
+- Fresh desktop and 393×727 phone first screens state the job, name freelancers, and lead with **Try it with sample data**. All three facts fit before scrolling.
+- The Northstar sample is populated, labelled, resettable, and isolated from a separately created real receipt.
+- Normal delivery, 2 MiB boundary hashing, client decline, invalid and valid response codes, persistence, PDF, malformed import recovery, and damaged links work live.
+- Offline reload, receipt creation, acknowledgement, sender verification, PDF export, and the service-worker update notice work live.
+- Routes, titles, H1 focus, legal pages, internal links, deliberate 404, security headers, MIME type, immutable caching, reduced motion, reflow, and same-origin privacy checks passed.
+- Axe returned zero serious or critical violations on all four public routes.
+- Lighthouse mobile scored 100/100/100/100. FCP and LCP were 1.2 s, TBT 70 ms, and CLS 0.
+- All 25 deployable files matched the clean candidate build byte-for-byte.
+- `npm ci`, `npm test`, `npm run build`, all nine declared claim commands, `npm audit --omit=dev`, and `git diff --check` exited successfully in a detached checkout at the implementation SHA.
 
-## Previous finding disposition
+## Findings left
 
-| Finding | Disposition |
-| --- | --- |
-| R1 sample sandbox | Fixed: `/demo` is isolated and populated. |
-| R2 malformed archive corruption | Fixed: strict validation and atomic import preserve existing records. |
-| R3 missing claim tests | Fixed: nine declared claims each have a tagged browser test and command. |
-| R4 broken Studio checkout | Fixed by removing the unavailable offer and all license UI. |
-| R5 plain words and first screen | Fixed: audience, sample action, facts, and copy audit added. |
-| R6 phone touch targets | Fixed: auxiliary links are 44 px minimum. |
-| R7 acknowledgement routing/title/focus | Fixed: path routes, titles, focus, and announcements added. |
-| R8 designed 404 | Fixed: deliberate HTTP 404 renders the recovery page. |
-| R9 metadata and shared skeleton | Fixed: canonical, OG/Twitter, icons, sitemap, header/footer, and legal metadata added. |
-| R10 cache policy and manifest MIME | Fixed: hashed assets are immutable; manifest is `application/manifest+json`. |
-| R11 response security policies | Fixed: CSP, Permissions Policy, COOP, and CORP are live response headers. |
+1. Four home/legal content links are only 18 px high on a phone. The contract requires 44×44 px targets.
+2. `offline-reload` can pass by seeing the pre-existing sample receipt heading. It does not assert that a new offline receipt was created, and it does not cover the broader offline response/PDF status text.
+3. `local-only` captures requests only during `/demo` load. It does not perform the demo flow named by the claim.
 
-## Verification
+The last two items leave two claims untested even though their commands exit successfully. Details and exact evidence are in `.factory/verification-3.md`.
 
-In a clean detached worktree at the implementation SHA, `npm ci`, `npm test`, `npm run build`, `npm run test:claims`, `npm audit --omit=dev`, and `git diff --check` all passed. `npm test` ran 7 Vitest checks and 28 desktop/phone Playwright checks. Each of the nine declared claim commands passed from `/demo`. The production build writes `dist/`.
+## How to reproduce
 
-Live verification passed:
+```sh
+npm ci
+npm test
+npm run build
+npm run test:claims
+```
 
-- `verify-url.sh` found HTTPS 200, title, language, one H1, main landmark, image alt text, labelled buttons, and no home-page console errors.
-- Fresh desktop first screen names the job, freelancers as the audience, and **Try it with sample data** as the first action. All three facts are visible before scrolling.
-- Fresh phone at 393×727 has no horizontal overflow. The heading, audience, sample action, and facts finish at 717 px, before the viewport bottom.
-- The live demo showed its banner, Northstar Coffee receipt, accepted response, Reset demo, and Start for real. Reset reseeded only demo data; a separately created real receipt remained and no sample record appeared in real storage.
-- A live sender created a receipt, a separate client browser declined it, the sender verified the returned response code, and the live PDF started `%PDF-1.4`.
-- A fresh controlled live context loaded `/demo`, went offline, reloaded, and created and sealed a receipt while controlled by the service worker.
-- Axe on `/`, `/demo`, `/privacy/`, and `/terms/` returned zero serious or critical violations.
-- `/not-a-real-route` returns HTTP 404 with the designed recovery page. The browser records the intentional network 404 for that navigation; the page itself has its title, H1, recovery link, and no script error.
-- Home response includes CSP, Permissions Policy, COOP, CORP, referrer policy, and nosniff. The manifest is `application/manifest+json`; hashed JavaScript is immutable for one year.
-- Every public file in deployed `dist/` matched the implementation build byte-for-byte.
-- Lighthouse mobile: Performance 100, Accessibility 100, Best Practices 100, SEO 100. FCP 1.0 s, LCP 1.1 s, TBT 30 ms, CLS 0.
+At 393 px wide, measure **Read the privacy policy** on `/` or `/demo`; its hit box is about 220.8×18 px. The privacy and terms email links are about 182.4×18 px.
 
-## Known dependency
+Read `tests/e2e/app.spec.ts` for `@claim:offline-reload` and `@claim:local-only`. The first checks a heading that exists before the attempted offline creation. The second ends after page load.
 
-The researched monetization is a one-time purchase, but the registered Sociobot Studio checkout returned 404 during review. It is not advertised or simulated in this release. Enabling a paid Studio tier requires a working product registration in the Sociobot billing API and a separate end-to-end checkout verification. This does not affect the free core receipt workflow.
+## Next steps
 
-## Useful files
-
-- `.factory/claims.json` — public claims and commands.
-- `.factory/demo.md` — demo URL, sample, reset, and storage isolation.
-- `.factory/copy-audit.md` — landing copy audit and terminology.
-- `README.md` — local setup, testing, build, and deployment instructions.
+- Repair and test the four content-link targets.
+- Strengthen the two claim tests to assert their full observable outcomes.
+- Re-run independent live verification. Acceptance requires zero findings and zero untested claims.
