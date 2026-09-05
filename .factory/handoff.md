@@ -5,7 +5,7 @@
 The repair is complete for the local-first delivery-to-client-response job.
 
 - Implementation SHA: `cbd2bc673d7549f8a019d6f66cd15e5ff3827fde`
-- Documentation report SHA: recorded in `.factory/documentation-sha.txt` after this report commit
+- Documentation report SHA: `f59e339664d84b97a650ec201187747d0e94844d`
 - Live URL: <https://delivery-acceptance-receipt.sociobot.in/>
 - Deployment: Static Web Apps production deployment succeeded on 2026-09-05 UTC.
 
