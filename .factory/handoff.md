@@ -1,54 +1,37 @@
-# Delivery Receipt — independent verification handoff
+# Delivery Receipt — review 1 handoff
 
-## Acceptance result: **FAIL**
+## Result: FAIL
 
-Candidate `0a297f2e5500079901c586bc9c73d29afe960d57` was independently verified on 2026-08-28 against <https://delivery-acceptance-receipt.sociobot.in/> for work order `delivery-acceptance-receipt-verify-2`.
+Review 1 was completed on 2026-09-05 for <https://delivery-acceptance-receipt.sociobot.in/>. It found **11 findings** and **14 untested public claims**.
 
-The deployment is healthy and all 17 generated files match the candidate build byte-for-byte. The previous whitespace-only receipt defect is repaired. However, the candidate has a new release-blocking local-data recovery defect: archive import validates only the product marker and top-level arrays, persists malformed receipt rows, and can leave the app permanently on **The local deck could not open.** Retrying does not recover because the invalid rows remain in IndexedDB; the product offers no way to remove or export them from that state.
+- Implementation reviewed: `e30ea12d64b5019dd73cca1522bb4d7517452b9b`
+- Documentation SHA before this report: `2b956b7162eb2db8f941014f72672d84b3b41eb3`
+- Live deployment: all 17 generated files match the implementation build byte-for-byte
+- Full report: [`.factory/review-1.md`](review-1.md)
 
-Exact local and live reproduction with two receipt objects containing only `id`:
+The main create → seal → separate-client response → verify → PDF/JSON workflow works. File hashing matched an independent SHA-256 across a 2 MiB chunk boundary. Offline create, acknowledgement, decline, sender verification, PDF export, persistence, update notice, keyboard traversal, reduced motion, axe, and current mobile Lighthouse checks passed.
 
-```json
-{
-  "toast": "Cannot read properties of undefined (reading 'localeCompare')",
-  "afterReload": "The local deck could not open.",
-  "afterRetry": "The local deck could not open."
-}
-```
+Release blockers remain:
 
-This is **High** severity because JSON import/export is the PWA's required data-ownership and transfer path, and browser-level clearing can also discard valid local receipts. Five auxiliary mobile legal/product links also miss the required 44 px target height (**Medium**). Short-lived caching with stable asset names and missing defence-in-depth response policies are documented as lower-severity deployment gaps.
+1. `/demo` is the empty real app, with no sample, sandbox, label, reset, or start-real action.
+2. Malformed archive rows are still persisted and make the app unavailable after reload.
+3. `.factory/claims.json` is missing; 14 public claim groups have no required tagged command.
+4. **Buy Studio once** returns HTTP 404 instead of checkout.
 
-Full evidence, exact reproduction, hashes, headers, browser results, and required remediation are in [`.factory/verification-2.md`](verification-2.md).
+Other open findings cover first-screen/plain-words copy, five undersized phone links, acknowledgement routing/title/focus, missing 404 behavior, metadata/site skeleton, short static caching and generic manifest MIME, and missing response policy configuration.
 
-## Verification summary
-
-- Clean detached checkout at the candidate SHA; Node `v22.23.2`, npm `10.9.8`.
-- `npm ci`: PASS, 0 vulnerabilities.
-- `npm test`: PASS — 6/6 unit checks; 9 browser checks passed, 1 intentional skip.
-- `npm run build`: PASS — strict TypeScript and exact Vite production build; `dist/` produced.
-- No lint script exists; `npm audit --omit=dev` and `git diff --check` passed.
-- Independent normal, boundary, and recovery checks covered delivery creation, 2 MiB + 8-byte SHA-256, service limits/removal, acknowledgement acceptance/decline, response verification, PDF/JSON/archive export, reload persistence, deletion, valid reimport, corrupted manifest, invalid response, and invalid license.
-- Desktop 1366×900, mobile 390×844, keyboard-only operation, visible focus, reduced motion, no overflow, and live core/legal axe scans were checked. Axe serious/critical: 0. Normal-flow console/page errors: 0.
-- PWA manifest: valid. Versioned service-worker cache, update toast, offline reload, and offline saved receipt: PASS.
-- Privacy: core flow had no cross-origin requests or file uploads. Optional license verification contacted only the expected Sociobot API and observed the once-per-day cache.
-- Lighthouse mobile live: 100 Performance / 100 Accessibility / 100 Best Practices / 100 SEO; LCP 1.0 s, CLS 0, TBT 10 ms.
-- Bundles: JS 41,938 bytes raw; CSS 17,063 bytes raw; mobile AVIF hero 19,182 bytes — all within budget.
-
-## How to rerun
+## Verification run
 
 ```sh
+# Detached clean worktree at e30ea12d64b5019dd73cca1522bb4d7517452b9b
 npm ci
 npm test
 npm run build
-npm run preview
+npm audit --omit=dev
 ```
 
-Then run the live smoke check:
+Results: 6/6 Vitest checks, 9 Playwright checks passed with one intentional project skip, build produced `dist/`, and audit found 0 vulnerabilities. Lighthouse mobile was 100/100/100/100 with LCP 1.14 s, TBT 91 ms, and CLS 0.
 
-```sh
-/opt/fleet/lib/verify-url.sh https://delivery-acceptance-receipt.sociobot.in/ /tmp/delivery-receipt-evidence
-```
+Evidence is under `/work/.evidence/live/`. The required report copy and result JSON are `/work/.evidence/qa-report.md` and `/work/.evidence/qa-result.json`.
 
-## Next step
-
-Reject and report malformed archives before any IndexedDB write, make bundle import atomic, add invalid-archive persistence/reload regression tests, redeploy, and run a fresh independent verification. Do not release this candidate as accepted.
+No product code was changed. Do not accept this release until the report reaches zero findings and zero untested claims.
